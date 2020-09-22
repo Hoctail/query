@@ -1,0 +1,20 @@
+{
+  "name": "@hoctail/query",
+  "version": "1.0.0",
+  "description": "Hoctail client-side query support",
+  "main": "index.js",
+  "module": "module/index.mjs",
+  "browser": "browser.js",
+  "author": "Hoctail",
+  "license": "MIT",
+  "dependencies": {
+    "@msgpack/msgpack": "^1.11.0",
+    "ws": "^6.2.1"
+  },
+  "scripts": {
+    "lint": "eslint '**/*.js' '**/*.mjs' --fix"
+  },
+  "devDependencies": {
+    "eslint": "7"
+  }
+}
