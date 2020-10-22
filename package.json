@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Hoctail client-side query support",
   "main": "index.js",
+  "types": "types/index.d.ts",
   "module": "module/index.mjs",
   "browser": "browser.js",
   "author": "Hoctail",
@@ -12,9 +13,11 @@
     "ws": "^6.2.1"
   },
   "scripts": {
+    "build": "tsc",
     "lint": "eslint '**/*.js' '**/*.mjs' --fix"
   },
   "devDependencies": {
+    "typescript": "^4.0.0",
     "eslint": "7"
   }
 }

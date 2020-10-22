@@ -1,3 +1,4 @@
+// @ts-check
 let qid = 1
 
 function createDoBlock (func, ...args) {
@@ -317,5 +318,8 @@ function messageHandler (event) {
 }
 
 HClient.Tx = Tx
+HClient.encode = undefined
+HClient.decode = undefined
+HClient.ws = undefined
 
 module.exports = HClient
