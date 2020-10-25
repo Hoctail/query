@@ -1,0 +1,54 @@
+{
+  "src": [
+    {
+      "nodejs": [
+        "src/HClient.js"
+      ],
+      "browser": [
+        "browser.js"
+      ]
+    }
+  ],
+  "dest": "docs",
+  "app": {
+    "title": "@hoctail/query - Docs",
+    "entrance": "api:nodejs",
+    "routing": "path",
+    "server": "github",
+    "base": "/query"
+  },
+  "jsdoc": {
+    "access": "public"
+  },
+  "template": {
+    "path": "zebra",
+    "options": {
+      "title": {
+        "label": "@hoctail/query",
+        "href": "/query/#"
+      },
+      "navbar": {
+        "enabled": true,
+        "animations": true,
+        "menu": [
+          {
+            "label": "Docs",
+            "iconClass": "fas fa-book",
+            "href": "./"
+          },
+          {
+            "label": "Browser Docs",
+            "iconClass": "fas fa-book",
+            "href": "./api/browser"
+          },
+          {
+            "label": "GitHub",
+            "iconClass": "fab fa-github",
+            "href": "https://github.com/Hoctail/query",
+            "target": "_blank"
+          }
+        ]
+      }
+    }
+  }
+}

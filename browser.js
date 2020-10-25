@@ -1,17 +1,28 @@
-import HClient from './src/HClient'
-import msgpack from '@msgpack/msgpack'
+// @ts-check
 
-HClient.decode = msgpack.decode
-HClient.encode = msgpack.encode
-HClient.ws = WebSocket
+import HClient_ from './src/HClient'
+import * as msgpack from '@msgpack/msgpack'
 
-class Client extends HClient {
+/**
+ * Hoctail query client public API
+ *
+ * Browser-specific mixin
+ */
+class Client extends HClient_ {
+  /**
+   * Create websocket
+   * Auth is managed by browser (with cookies)
+   * @protected
+   */
   createSocket () {
-    this.ws = new HClient.ws(this.getEndpoint())
+    this.ws = new WebSocket(this.getEndpoint())
   }
 
+  /**
+   * Heartbeat is managed by browser, noop here
+   * @protected
+   */
   heartbeat () {
-    // noop in browser
   }
 
   get app () {
@@ -21,6 +32,13 @@ class Client extends HClient {
     return this._app = Client.parseApp()
   }
 
+  set app (value) {
+    super.app = value
+  }
+
+  /**
+   * Set up live reload for browser apps
+   */
   liveReload () {
     (async () => {
       try {
@@ -34,8 +52,14 @@ class Client extends HClient {
   }
 }
 
+/**
+ * Callback that will reload the app on 'refresh' command
+ * @callback
+ * @param {MessageEvent} event
+ * @private
+ */
 function _cmdHandler (event) {
-  const message = HClient.decode(new Uint8Array(event.data))
+  const message = Client.decode(new Uint8Array(event.data))
   if (message.type === 'cmd') {
     const msg = message.msg
     switch (msg.cmd) {
@@ -48,6 +72,12 @@ function _cmdHandler (event) {
   }
 }
 
+/**
+ * Parse full app path from window.location property
+ *
+ * @return {string} app path in 'ownerName/appName' format
+ * @throws {Error} if cannot parse {@link window.location} properly
+ */
 Client.parseApp = () => {
   const path = window.location.pathname
   if (path) {
@@ -58,5 +88,10 @@ Client.parseApp = () => {
   }
   throw new Error(`App name cannot be derived from: ${window.location.pathname}`)
 }
+/** @type {any} */
+Client.decode = msgpack.decode
+/** @type {any} */
+Client.encode = msgpack.encode
+Client.ws = WebSocket
 
 export default Client

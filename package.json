@@ -1,6 +1,6 @@
 {
   "name": "@hoctail/query",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Hoctail client-side query support",
   "main": "index.js",
   "module": "module/index.mjs",
@@ -12,9 +12,13 @@
     "ws": "^6.2.1"
   },
   "scripts": {
-    "lint": "eslint '**/*.js' '**/*.mjs' --fix"
+    "lint": "eslint '**/*.js' '**/*.mjs' --fix",
+    "prepare": "yarn run lint && tsc"
   },
   "devDependencies": {
-    "eslint": "7"
+    "docma": "^3.2.2",
+    "eslint": "7",
+    "typescript": "^4.1.0-beta",
+    "yarn": "^1.22.10"
   }
 }
