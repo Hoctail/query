@@ -15,7 +15,7 @@
  * @callback QueryCallback
  * @param {string} query - SQL query string
  * @param {Array<*>} [params] - array of query parameters, optional
- * @return {Promise<Array<object>>} result array
+ * @return {Promise<object[]>} result array
  * @private
  */
 
@@ -194,7 +194,7 @@ class Tx {
    * Run SQL query (in transaction block)
    * @param {string} query - SQL query string
    * @param {Array<*>} params - array of query parameters
-   * @return {Promise<Array<object>>} array of results
+   * @return {Promise<object[]>} array of results
    */
   async query (query, params) {
     return this._queryFunc(query, params)
@@ -233,7 +233,7 @@ class Tx {
    *
    * Doesn't wait, use {@link HClient#wait} to wait for the result
    * @param {string} endpoint - procedure name
-   * @param {Array.<*>} args - array of arguments, will be JSON serialized
+   * @param {Array<*>} args - array of arguments, will be JSON serialized
    * @return {Promise<*>} returns procedure results if any
    */
   async call (endpoint, ...args) {
@@ -434,9 +434,9 @@ class HClient {
   /**
    * Run SQL query within an implicit transaction
    * @param {string} query - SQL query string
-   * @param {Array<*>} params - {@link Array} of query paraameters
+   * @param {Array<*>} params - {@link Array} of query parameters
    * @param {boolean} wait - will wait for any {@link Promise}s to resolve
-   * @return {Promise<Array.<object>>} {@link Array} of result objects
+   * @return {Promise<object[]>} {@link Array} of result objects
    */
   async query (query, params, wait) {
     const tx = await this._newTx(wait)
@@ -488,7 +488,7 @@ class HClient {
   /**
    * Create transaction and optionally execute a local function in the transaction block context
    * @param {function} [func] - function to execute locally in the transaction block, optional
-   * @return {Promise<Tx|Array<*>>} transaction class or result of executing the function
+   * @return {Promise<Tx|*>} transaction class or result of executing the function
    */
   async tx (func) {
     await this._connect()
@@ -560,7 +560,7 @@ HClient.decode = null
 /**
  * @typedef QueryObject
  * @property {string} q SQL query string
- * @property {object|Array<any>|string|null} params SQL query params
+ * @property {object|Array<*>|string|null} params SQL query params
  * @private
  */
 
@@ -626,10 +626,10 @@ function emitError (error) {
  * @param {string} schema - schema UUID
  * @param {string} appname - application name
  * @param {string} query - SQL query
- * @param {Array<any>} [params] - SQL query params, optional
+ * @param {Array<*>} [params] - SQL query params, optional
  * @param {string|null} [tid] - transaction ID, optional
  * @param {boolean} [wait] - wait flag, optional, will wait for {@link Promise} resolution if true
- * @return {Promise<object>} resulting rows {@link Array}
+ * @return {Promise<object>} resulting rows {@link Object}
  * @private
  */
 async function _wsQuery (ws, schema, appname, query, params, tid, wait = false) {
