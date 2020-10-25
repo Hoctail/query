@@ -1,0 +1,13 @@
+{
+  "include": ["index.js", "src/HClient.js", "browser.js"],
+  "exclude": ["types"],
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "outDir": "types",
+    "target": "es6",
+    "checkJs": true,
+    "allowJs": true,
+    "declaration": true,
+    "emitDeclarationOnly": true
+  }
+}
