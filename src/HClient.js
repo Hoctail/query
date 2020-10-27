@@ -193,7 +193,7 @@ class Tx {
   /**
    * Run SQL query (in transaction block)
    * @param {string} query - SQL query string
-   * @param {Array<*>} params - array of query parameters
+   * @param {Array<*>} [params] - array of query parameters
    * @return {Promise<object[]>} array of results
    */
   async query (query, params) {
@@ -221,7 +221,7 @@ class Tx {
    *
    * Doesn't wait, use {@link HClient#wait} to wait for the result
    * @param {function} func - arbitrary function
-   * @param {...*} args - function arguments, will be JSON serialized
+   * @param {...*} [args] - function arguments, will be JSON serialized
    * @return {Promise<void>}
    */
   async run (func, ...args) {
@@ -233,7 +233,7 @@ class Tx {
    *
    * Doesn't wait, use {@link HClient#wait} to wait for the result
    * @param {string} endpoint - procedure name
-   * @param {Array<*>} args - array of arguments, will be JSON serialized
+   * @param {Array<*>} [args] - array of arguments, will be JSON serialized
    * @return {Promise<*>} returns procedure results if any
    */
   async call (endpoint, ...args) {
@@ -434,8 +434,8 @@ class HClient {
   /**
    * Run SQL query within an implicit transaction
    * @param {string} query - SQL query string
-   * @param {Array<*>} params - {@link Array} of query parameters
-   * @param {boolean} wait - will wait for any {@link Promise}s to resolve
+   * @param {Array<*>} [params] - {@link Array} of query parameters
+   * @param {boolean} [wait] - will wait for any {@link Promise}s to resolve
    * @return {Promise<object[]>} {@link Array} of result objects
    */
   async query (query, params, wait) {
@@ -446,7 +446,7 @@ class HClient {
   /**
    * Run function in a server context
    * @param {function} func
-   * @param {...*} args
+   * @param {...*} [args]
    * @return {Promise<void>} doesn't return anything
    */
   async run (func, ...args) {
@@ -457,7 +457,7 @@ class HClient {
   /**
    * Call a remote procedure
    * @param {string} endpoint - remote procedure name
-   * @param {...*} args - remote procedure arguments
+   * @param {...*} [args] - remote procedure arguments
    * @return {Promise<*>} result, if any
    */
   async call (endpoint, ...args) {
@@ -470,7 +470,7 @@ class HClient {
    *
    * The only way to `await` for async functions/procedures
    * @param {function|string} func - inline function or remote procedure name
-   * @param {...*} args - function or procedure arguments
+   * @param {...*} [args] - function or procedure arguments
    * @return {Promise<*>} result, if any
    */
   async wait (func, ...args) {
