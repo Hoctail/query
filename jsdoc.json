@@ -1,0 +1,12 @@
+{
+    "source": {
+        "include": ["./src"],
+        "includePattern": ".js$",
+        "excludePattern": "(node_modules/|docs)"
+    },
+    "opts": {
+        // "template": "node_modules/better-docs",
+        // "template": "node_modules/jsdoc-fresh",
+        "template": "node_modules/docdash"
+    }
+}
