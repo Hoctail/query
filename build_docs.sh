@@ -9,5 +9,5 @@ git checkout $branch && \
 	yarn docs && \
 	git add docs && \
 	git commit -m "docs" && \
-	git push origin docs
+	git push origin docs --force
 git checkout $branch
