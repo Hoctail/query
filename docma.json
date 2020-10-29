@@ -1,9 +1,7 @@
 {
   "src": [
+    "src/HClient.js",
     {
-      "nodejs": [
-        "src/HClient.js"
-      ],
       "browser": [
         "browser.js"
       ]
@@ -12,7 +10,7 @@
   "dest": "docs",
   "app": {
     "title": "@hoctail/query - Docs",
-    "entrance": "api:nodejs",
+    "entrance": "api",
     "routing": "path",
     "server": "github",
     "base": "/query"
@@ -25,7 +23,7 @@
     "options": {
       "title": {
         "label": "@hoctail/query",
-        "href": "/query/#"
+        "href": "/query/api/#"
       },
       "navbar": {
         "enabled": true,
@@ -34,7 +32,7 @@
           {
             "label": "Docs",
             "iconClass": "fas fa-book",
-            "href": "./"
+            "href": "./api"
           },
           {
             "label": "Browser Docs",
