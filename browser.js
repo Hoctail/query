@@ -25,6 +25,11 @@ class Client extends HClient_ {
   heartbeat () {
   }
 
+  /**
+   * The app name getter
+   * @public
+   * @return {string}
+  */
   get app () {
     if (this._app != null || this.schema != null) {
       return this._app
@@ -32,12 +37,18 @@ class Client extends HClient_ {
     return this._app = Client.parseApp()
   }
 
+  /**
+   * The app name setter
+   * @public
+   * @param {string} value
+  */
   set app (value) {
     super.app = value
   }
 
   /**
    * Set up live reload for browser apps
+   * @public
    */
   liveReload () {
     (async () => {
@@ -75,6 +86,7 @@ function _cmdHandler (event) {
 /**
  * Parse full app path from window.location property
  *
+ * @public
  * @return {string} app path in 'ownerName/appName' format
  * @throws {Error} if cannot parse {@link window.location} properly
  */
@@ -88,10 +100,19 @@ Client.parseApp = () => {
   }
   throw new Error(`App name cannot be derived from: ${window.location.pathname}`)
 }
-/** @type {any} */
+/** 
+ * @public
+ * @type {any}
+ * */
 Client.decode = msgpack.decode
-/** @type {any} */
+/** 
+ * @public
+ * @type {any}
+ * */
 Client.encode = msgpack.encode
+/**
+ * @public
+*/
 Client.ws = WebSocket
 
 export default Client

@@ -2,6 +2,7 @@
 
 /**
  * Hoctail client constructor options
+ * @public
  * @typedef {object} ClientOptions
  * @property {string} baseURL endpoint URL
  * @property {string} [schema] schema ID, optional
@@ -12,11 +13,11 @@
 
 /**
  * Internal callback to use for query calls, async
+ * @private
  * @callback QueryCallback
  * @param {string} query - SQL query string
  * @param {Array<*>} [params] - array of query parameters, optional
  * @return {Promise<object[]>} result array
- * @private
  */
 
 /**
@@ -25,6 +26,7 @@
  * Can use `console.log` in most cases
  *
  * It's a noop by default if not supplied (no logging)
+ * @public
  * @callback LoggerFunction
  * @param {...*} args - arguments to print out
  * @return {void}
@@ -42,6 +44,7 @@
  * where id = ANY(${ids});
  * ```
  *
+ * @public
  * @typedef EventMessage
  * @property {string} eventId event id, arbitrary tag
  * @property {string} schema schema ID to select event from
@@ -51,6 +54,7 @@
 
 /**
  * Event reaction callback
+ * @public
  * @callback EventCallback
  * @param {EventMessage} message - event message
  * @return {void}
@@ -60,6 +64,7 @@
  * Generalized {@link WebSocket} implementation
  *
  * Supports both browser-like and nodejs-like interfaces
+ * @private
  * @typedef WebSocketGeneric
  * @property {function(string, function): void} addEventListener -
  * @property {function(string, function): void} removeEventListener -
@@ -70,7 +75,6 @@
  * @property {number} readyState -
  * @property {function} close -
  * @property {function} [terminate] -
- * @private
  */
 
 /**
@@ -173,6 +177,7 @@ function normalizeEndpoint (rpcName, argsLen) {
 class Tx {
   /**
    * Creates transaction, do not call it directly, use {@link HClient#tx}
+   * @public
    * @param {QueryCallback} cQuery - query executor function
    * @param {string=} [tid] - transaction id, optional
    */
@@ -184,6 +189,7 @@ class Tx {
     this._queryFunc = cQuery
     /**
      * Transaction id
+     * @public
      * @type {string|null}
      * @readonly
      */
@@ -192,6 +198,7 @@ class Tx {
 
   /**
    * Run SQL query (in transaction block)
+   * @public
    * @param {string} query - SQL query string
    * @param {Array<*>} [params] - array of query parameters
    * @return {Promise<object[]>} array of results
@@ -202,6 +209,7 @@ class Tx {
 
   /**
    * Commit the transaction, closes the transaction block
+   * @public
    * @return {Promise<void>}
    */
   async commit () {
@@ -210,6 +218,7 @@ class Tx {
 
   /**
    * Rollback the transaction, closes the transaction block
+   * @public
    * @return {Promise<void>}
    */
   async rollback () {
@@ -220,6 +229,7 @@ class Tx {
    * Run function in a server context (in transaction block)
    *
    * Doesn't wait, use {@link HClient#wait} to wait for the result
+   * @public
    * @param {function} func - arbitrary function
    * @param {...*} [args] - function arguments, will be JSON serialized
    * @return {Promise<void>}
@@ -232,6 +242,7 @@ class Tx {
    * Call a remote procedure (in transaction block)
    *
    * Doesn't wait, use {@link HClient#wait} to wait for the result
+   * @public
    * @param {string} endpoint - procedure name
    * @param {Array<*>} [args] - array of arguments, will be JSON serialized
    * @return {Promise<*>} returns procedure results if any
@@ -251,7 +262,7 @@ class HClient {
    *
    * Typical usage:
    *   `new HClient({ baseURL, key }, console.log)`
-   * @constructor
+   * @public
    * @param {ClientOptions} options - config options
    * @param {LoggerFunction} [logger=()=>{}] - logger function, optional, noop by default
    */
@@ -264,6 +275,7 @@ class HClient {
     this.baseURL = options.baseURL
     /**
      * Logger function
+     * @public
      * @type {LoggerFunction}
      */
     this.logger = logger || function () {}
@@ -302,6 +314,7 @@ class HClient {
     }
     /**
      * Alias for {@link HClient#query}
+     * @public
      * @type {function(string, Array<*>, boolean): Promise<Array<Object>>}
      */
     this.q = this.query
@@ -353,8 +366,8 @@ class HClient {
   }
 
   /**
-   * @return {Promise<void>}
    * @private
+   * @return {Promise<void>}
    */
   async _wsConnect () {
     return new Promise((resolve, reject) => {
@@ -381,8 +394,8 @@ class HClient {
   }
 
   /**
-   * @return {Promise<void>}
    * @private
+   * @return {Promise<void>}
    */
   async _connect () {
     if (this.ws == null || this.ws.readyState === HClient.ws.CLOSED) {
@@ -413,6 +426,7 @@ class HClient {
    * Explicit connect to server, optional
    *
    * Lazy (re)connection is used in {@link HClient#query}, {@link HClient#run}, {@link HClient#call}, etc...
+   * @public
    * @return {Promise<void>}
    */
   async connect () {
@@ -421,9 +435,9 @@ class HClient {
 
   /**
    * Create an implicit transaction block
+   * @private
    * @param {boolean} [wait=false] - if true should wait for async call to complete
    * @return {Promise<Tx>} resolves to a transaction instance
-   * @private
    */
   async _newTx (wait) {
     await this._connect()
@@ -433,6 +447,7 @@ class HClient {
 
   /**
    * Run SQL query within an implicit transaction
+   * @public
    * @param {string} query - SQL query string
    * @param {Array<*>} [params] - {@link Array} of query parameters
    * @param {boolean} [wait] - will wait for any {@link Promise}s to resolve
@@ -445,6 +460,7 @@ class HClient {
 
   /**
    * Run function in a server context
+   * @public
    * @param {function} func
    * @param {...*} [args]
    * @return {Promise<void>} doesn't return anything
@@ -456,6 +472,7 @@ class HClient {
 
   /**
    * Call a remote procedure
+   * @public
    * @param {string} endpoint - remote procedure name
    * @param {...*} [args] - remote procedure arguments
    * @return {Promise<*>} result, if any
@@ -469,6 +486,7 @@ class HClient {
    * Call a remote procedure or execute a function and wait for the result
    *
    * The only way to `await` for async functions/procedures
+   * @public
    * @param {function|string} func - inline function or remote procedure name
    * @param {...*} [args] - function or procedure arguments
    * @return {Promise<*>} result, if any
@@ -487,6 +505,7 @@ class HClient {
 
   /**
    * Create transaction and optionally execute a local function in the transaction block context
+   * @public
    * @param {function} [func] - function to execute locally in the transaction block, optional
    * @return {Promise<Tx|*>} transaction class or result of executing the function
    */
@@ -511,6 +530,7 @@ class HClient {
 
   /**
    * Get the current user object
+   * @public
    * @return {Promise<object>}
    */
   async user () {
@@ -519,17 +539,22 @@ class HClient {
 
   /**
    * The app name getter/setter
+   * @public
    * @type {string}
    */
   get app () {
     return this._app
   }
+  /**
+   * @public
+  */
   set app (arg) {
     this._app = arg
   }
 
   /**
    * Terminate the client
+   * @public
    * @param {number} [code=1005] - websocket exit code
    * @param {string} [reason=''] - websocket connection close reason
    */
@@ -544,7 +569,7 @@ class HClient {
   }
 
   /**
-   *
+   * @public
    * @param {EventCallback} callback
    */
   eventListener (callback) {
@@ -558,6 +583,7 @@ HClient.encode = null
 HClient.decode = null
 
 /**
+ * @public
  * @typedef QueryObject
  * @property {string} q SQL query string
  * @property {object|Array<*>|string|null} params SQL query params
@@ -581,9 +607,9 @@ HClient.decode = null
  *   params: [1, "test"]
  * }
  * ```
+ * @private
  * @param {QueryObject} queryObj
  * @return {QueryObject}
- * @private
  */
 function parse_named (queryObj) {
   const params_arr = []
@@ -604,9 +630,9 @@ function parse_named (queryObj) {
 
 /**
  * Construct {@link Error} object from a serialized error string
+ * @private
  * @param {string} error - error string, JSON serialized
  * @return {Error} resulting {@link Error} object
- * @private
  */
 function emitError (error) {
   const errObj = JSON.parse(error)
@@ -622,6 +648,7 @@ function emitError (error) {
 
 /**
  * Main query runner
+ * @private
  * @param {WebSocketGeneric} ws - {@link WebSocket}-like interface
  * @param {string} schema - schema UUID
  * @param {string} appname - application name
@@ -630,7 +657,6 @@ function emitError (error) {
  * @param {string|null} [tid] - transaction ID, optional
  * @param {boolean} [wait] - wait flag, optional, will wait for {@link Promise} resolution if true
  * @return {Promise<object>} resulting rows {@link Object}
- * @private
  */
 async function _wsQuery (ws, schema, appname, query, params, tid, wait = false) {
   const queryObj = parse_named({ q: String(query), params: params })
@@ -678,10 +704,10 @@ async function _wsQuery (ws, schema, appname, query, params, tid, wait = false) 
 
 /**
  * Root message handler
+ * @private
  * @callback
  * @param {MessageEvent} event - event to handle
  * @return {void}
- * @private
  */
 function messageHandler (event) {
   const message = HClient.decode(new Uint8Array(event.data))
@@ -700,6 +726,9 @@ function messageHandler (event) {
   }
 }
 
+/**
+ * @public
+*/
 HClient.Tx = Tx
 HClient.default = HClient
 

@@ -1,14 +1,19 @@
 {
   "plugins": ["plugins/markdown"],
   "source": {
-    "include": ["./src"],
+    "include": ["./src", "browser.js"],
     "includePattern": ".js$",
     "excludePattern": "(node_modules/|docs)"
   },
   "opts": {
-    // "template": "node_modules/better-docs",
-    // "template": "node_modules/jsdoc-fresh",
     "template": "node_modules/docdash",
-    "destination": "docs/"
+    "destination": "docs/",
+    "access": ["public", "undefined"]
+  },
+  "docdash": {
+    "static": true,
+    "search": true,
+    "private": true,
+    "typedefs": true
   }
 }

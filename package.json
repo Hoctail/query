@@ -17,13 +17,9 @@
     "prepare": "yarn run lint && tsc"
   },
   "devDependencies": {
-    "better-docs": "^2.3.2",
     "docdash": "^1.2.0",
-    "docma": "file:../../docma",
     "eslint": "7",
     "jsdoc": "^3.6.6",
-    "jsdoc-fresh": "^1.0.2",
-    "jsdoc-template": "^1.2.0",
     "typescript": "^4.1.0-beta",
     "yarn": "^1.22.10"
   }
