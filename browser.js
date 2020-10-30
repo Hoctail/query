@@ -26,7 +26,7 @@ class Client extends HClient_ {
   }
 
   /**
-   * The app name getter
+   * The app name getter/setter
    * @public
    * @return {string}
   */
@@ -38,8 +38,9 @@ class Client extends HClient_ {
   }
 
   /**
-   * The app name setter
+   * The app name getter/setter
    * @public
+   * @ignore
    * @param {string} value
   */
   set app (value) {

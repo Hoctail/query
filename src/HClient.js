@@ -547,6 +547,7 @@ class HClient {
   }
   /**
    * @public
+   * @ignore
   */
   set app (arg) {
     this._app = arg
