@@ -1,5 +1,5 @@
 import HClient from './src/HClient'
-import * as msgpack from '@msgpack/msgpack'
+import msgpack from '@msgpack/msgpack'
 
 /**
  * @module browser
