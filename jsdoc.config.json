@@ -1,0 +1,41 @@
+{
+  "source": {
+    "include": [
+      "index.js",
+      "browser.js",
+      "src/HClient.js"
+    ]
+  },
+  "plugins": ["plugins/markdown"],
+  "opts": {
+    "access": "public",
+    "destination": "docs/",
+    "encoding": "utf8",
+    "template": "../node_modules/docdash",
+    "verbose": true,
+    "readme": "README.md"
+  },
+  "templates": {
+    "default": {
+      "useLongnameInNav": true,
+      "outputSourceFiles": true,
+      "includeDate": false
+    }
+  },
+  "docdash": {
+    "static": true,
+    "sort": true,
+    "collapse": true,
+    "typedefs": true,
+    "removeQuotes": "none",
+    "scripts": [],
+    "menu":{
+      "Github repo":{
+        "href":"https://github.com/hoctail/query",
+        "target":"_blank",
+        "class":"menu-item",
+        "id":"repository"
+      }
+    }
+  }
+}

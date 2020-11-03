@@ -1,0 +1,4 @@
+docs/
+jsdoc.config.json
+*.tgz
+*.tar.gz
