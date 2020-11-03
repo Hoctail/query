@@ -1,6 +1,6 @@
 {
   "name": "@hoctail/query",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Hoctail client-side query support",
   "main": "./index.js",
   "module": "./module/index.js",
