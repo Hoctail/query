@@ -560,11 +560,11 @@ class HClient {
 
   /**
    * Terminate the client
-   * @param {number} [code=1005] - websocket exit code
-   * @param {string} [reason=''] - websocket connection close reason
+   * @param {number} [code] - websocket exit code
+   * @param {string} [reason] - websocket connection close reason
    * @public
    */
-  terminate (code=1005, reason='') {
+  terminate (code, reason) {
     if (this.ws != null) {
       this.ws.close(code, reason)
       if (typeof this.ws.terminate === 'function') {
