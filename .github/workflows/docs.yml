@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  query-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.HBUILD_PAT }}
+      - name: create docs
+        run: |
+          git config --global user.email build@hoctail.io
+          git config --global user.name hoctail-build
+          ( git branch -D docs1 || true ) && \
+          git checkout -b docs1 && \
+          npm install jsdoc docdash && \
+          node_modules/.bin/jsdoc -c jsdoc.config.json --template ./node_modules/docdash && \
+          git add docs && \
+          git commit -m "docs" && \
+          git push origin docs1 --force
