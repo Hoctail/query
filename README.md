@@ -6,7 +6,6 @@
 > Hoctail query client
 
 ### 🏠 [Homepage](https://github.com/hoctail/query)
-## Docs(https://hoctail.github.io/query)
 
 ## Install
 
