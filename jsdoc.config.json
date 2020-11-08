@@ -37,7 +37,7 @@
         "id":"repository"
       },
       "API keys":{
-        "href":"https://raw.githubusercontent.com/Hoctail/query/blob/master/img/api-keys.gif",
+        "href":"https://raw.githubusercontent.com/Hoctail/query/master/img/api-keys.gif",
         "target":"_blank",
         "class":"menu-item",
         "id":"apikeys"
