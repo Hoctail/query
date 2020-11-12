@@ -6,7 +6,7 @@
  * @property {string} [token] auth token, use API key instead, optional
  * @property {string} [app] app name (format: 'ownerName/appName'), optional
  * @property {string} [key] api KEY, required if no token supplied
- * @property {number} [logLevel] minimal log level, default: NOTICE
+ * @property {number} [logLevel] minimal log level, default: LOG
  * @public
  * */
 
