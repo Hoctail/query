@@ -6,6 +6,7 @@
  * @property {string} [token] auth token, use API key instead, optional
  * @property {string} [app] app name (format: 'ownerName/appName'), optional
  * @property {string} [key] api KEY, required if no token supplied
+ * @property {number} [logLevel] minimal log level, default: NOTICE
  * @public
  * */
 
@@ -108,6 +109,29 @@ function getNumSeq (len) {
     numCache[len] = num
   }
   return num
+}
+
+const LOG = {
+  10: 'DEBUG5',
+  11: 'DEBUG4',
+  12: 'DEBUG3',
+  13: 'DEBUG2',
+  14: 'DEBUG1',
+  15: 'LOG',
+  17: 'INFO',
+  18: 'NOTICE',
+  19: 'WARNING',
+  20: 'ERROR',
+  DEBUG5: 10,
+  DEBUG4: 11,
+  DEBUG3: 12,
+  DEBUG2: 13,
+  DEBUG1: 14,
+  LOG: 15,
+  INFO: 17,
+  NOTICE: 18,
+  WARNING: 19,
+  ERROR: 20,
 }
 
 /**
@@ -247,7 +271,7 @@ class HClient {
    *   `new HClient({ baseURL, key }, console.log)`
    * @constructor
    * @param {ClientOptions} options - config options
-   * @param {LoggerFunction} [logger=()=>{}] - logger function, optional, noop by default
+   * @param {LoggerFunction} [logger] - logger function, optional, noop by default
    * @public
    */
   constructor (options, logger) {
@@ -259,9 +283,9 @@ class HClient {
     this.baseURL = options.baseURL
     /**
      * Logger function
-     * @type {LoggerFunction}
+     * @type {LoggerFunction|null}
      */
-    this.logger = logger || function () {}
+    this.logger = logger
     /**
      * WebSocket instance
      * @type {*}
@@ -300,6 +324,7 @@ class HClient {
      * @type {function(string, Array<*>, boolean): Promise<Array<Object>>}
      */
     this.q = this.query
+    this.logLevel = options.logLevel || LOG.LOG
   }
 
   /**
@@ -708,14 +733,17 @@ async function _wsQuery (client, query, params, tid, wait = false) {
  * @return {void}
  * @private
  */
-function messageHandler (event) {
+async function messageHandler (event) {
   const message = this.decode(event)
   switch (message.type) {
     case 'log':
-      if (typeof message.msg === 'string') {
-        this.logger(message.msg)
-      } else {
-        this.logger(...message.msg)
+      const msg = message.msg
+      if (this.logger && msg.severity >= this.logLevel) {
+        const rows = await this.query(`select * from "${msg.schema}".logs where id = $1`, [msg.id])
+        if (rows.length > 0) {
+          const row = rows[0]
+          this.logger(row.message)
+        }
       }
       break
     case 'event':
@@ -727,5 +755,6 @@ function messageHandler (event) {
 
 HClient.Tx = Tx
 HClient.default = HClient
+HClient.LOG = LOG
 
 module.exports = HClient

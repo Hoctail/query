@@ -4,7 +4,7 @@ declare class HClient {
     constructor(options: ClientOptions, logger?: LoggerFunction);
 
     baseURL: string;
-    logger: LoggerFunction;
+    logger: LoggerFunction | null;
     schema: string | null;
     token: string | null;
 
@@ -60,6 +60,7 @@ type ClientOptions = {
     token?: string;
     app?: string;
     key?: string;
+    logLevel?: number;
 };
 type EventMessage = {
     eventId: string;
