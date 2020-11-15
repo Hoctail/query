@@ -6,11 +6,14 @@ const WS = require('ws')
  * @module nodejs
  */
 
-/**
- * Query client for nodejs
- * @extends HClient
- * @public
- */
+ /**
+   * Query client for nodejs is a low level api. See {@link module:node-client~NodeClient NodeClient} for alternatives.
+   * @public
+   * @alias NodejsQueryClient
+   * @extends HClient
+   * @param options see {@link HClient} base class
+   * @param logger see {@link HClient} base class
+  */
 class Client extends HClient {
   createSocket () {
     if (!this.token) {

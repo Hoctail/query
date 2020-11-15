@@ -261,11 +261,14 @@ class Tx {
 }
 
 /**
- * Hoctail query client public API
+ * Hoctail query client public API. It's base class and not intended for direct use.
+ * Check inherited classes instead:
+ * {@link BrowserQueryClient},
+ * {@link NodejsQueryClient}
  */
 class HClient {
   /**
-   * Creates a new client
+   * Creates a new client. This is a base class, see 
    *
    * Typical usage:
    *   `new HClient({ baseURL, key }, console.log)`
