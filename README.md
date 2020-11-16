@@ -3,7 +3,7 @@
 [![Documentation](https://img.shields.io/badge/documentation-yes-brightgreen.svg)](https://hoctail.github.io/query/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/Hoctail/query/blob/master/LICENSE)
 
-> Hoctail query client
+> Hoctail query client is low level api for browser and nodejs.
 
 ### 🏠 [Homepage](https://github.com/hoctail/query)
 
@@ -47,7 +47,7 @@ client.wait(async () => {
 }).then(console.log)
 ```
 
-See [the docs](https://hoctail.github.io/query/) for a complete API documentation
+See [the docs](https://hoctail.github.io/hoctail/) for a complete API documentation
 
 ## Author
 
