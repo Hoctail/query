@@ -10,8 +10,6 @@ import msgpack from '@msgpack/msgpack'
  *
  * Browser-specific mixin
  * @extends HClient
- * @public
- * @alias BrowserQueryClient
  */
 class Client extends HClient {
   /**
