@@ -262,9 +262,8 @@ class Tx {
 
 /**
  * Hoctail query client public API. It's base class and not intended for direct use.
- * Check inherited classes instead:
- * {@link BrowserQueryClient},
- * {@link NodejsQueryClient}
+ * Check inherited instead:
+ * {@link Client}
  */
 class HClient {
   /**
@@ -275,7 +274,6 @@ class HClient {
    * @constructor
    * @param {ClientOptions} options - config options
    * @param {LoggerFunction} [logger] - logger function, optional, noop by default
-   * @public
    */
   constructor (options, logger) {
     /**

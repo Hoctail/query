@@ -7,9 +7,7 @@ const WS = require('ws')
  */
 
  /**
-   * Query client for nodejs is a low level api. See {@link module:node-client~NodeClient NodeClient} for alternatives.
-   * @public
-   * @alias NodejsQueryClient
+   * Query client for nodejs is a low level api. See {@link NodeClient} for alternatives.
    * @extends HClient
    * @param options see {@link HClient} base class
    * @param logger see {@link HClient} base class
