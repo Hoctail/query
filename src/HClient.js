@@ -6,7 +6,7 @@
  * @property {string} [token] auth token, use API key instead, optional
  * @property {string} [app] app name (format: 'ownerName/appName'), optional
  * @property {string} [key] api KEY, required if no token supplied
- * @property {number} [logLevel] minimal log level, default: LOG
+ * @property {string|number} [logLevel] minimal log level, default: 'LOG'
  * @public
  * */
 
@@ -267,7 +267,7 @@ class Tx {
  */
 class HClient {
   /**
-   * Creates a new client. This is a base class, see 
+   * Creates a new client. This is a base class, see
    *
    * Typical usage:
    *   `new HClient({ baseURL, key }, console.log)`
@@ -325,7 +325,11 @@ class HClient {
      * @type {function(string, Array<*>, boolean): Promise<Array<Object>>}
      */
     this.q = this.query
-    this.logLevel = options.logLevel || LOG.LOG
+    /**
+     * Default log level to use for the logger
+     * @type {number}
+     */
+    this.logLevel = parseLogLevel(options.logLevel)
   }
 
   /**
@@ -754,8 +758,29 @@ async function messageHandler (event) {
   }
 }
 
+/**
+ * Parse logLevel severity and return a numeric value, will fail on unknown level
+ * @param {string|number|null} [logLevel] - log level severity to parse
+ * @return {number} numeric severity level
+ */
+function parseLogLevel (logLevel) {
+  let outLevel = logLevel
+  if (logLevel == null) {
+    outLevel = LOG.LOG
+  } else if (typeof logLevel === 'string') {
+    outLevel = LOG[logLevel.toUpperCase()]
+  } else if (typeof logLevel === 'number' && LOG[logLevel] == null) {
+    outLevel = null
+  }
+  if (outLevel == null) {
+    throw new Error(`Unknown log severity level: ${logLevel}`)
+  }
+  return outLevel
+}
+
 HClient.Tx = Tx
 HClient.default = HClient
 HClient.LOG = LOG
+HClient.paseLogLevel = parseLogLevel
 
 module.exports = HClient
