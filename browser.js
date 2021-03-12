@@ -1,9 +1,9 @@
 import HClient from './src/HClient'
-import { encode, decode, ExtensionCodec } from '@msgpack/msgpack'
+import msgpack from '@msgpack/msgpack'
 import { bigIntCodec } from './src/ExtensionCodecs'
 
-const extensionCodec = new ExtensionCodec()
-bigIntCodec(extensionCodec, encode, decode)
+const extensionCodec = new msgpack.ExtensionCodec()
+bigIntCodec(extensionCodec, msgpack.encode, msgpack.decode)
 
 /**
  * @module browser
@@ -115,10 +115,10 @@ Client.parseApp = () => {
 }
 Client.msgpack = {
   encode: (obj) => {
-    return encode(obj, { extensionCodec })
+    return msgpack.encode(obj, { extensionCodec })
   },
   decode: (data)  => {
-    return decode(new Uint8Array(data), { extensionCodec })
+    return msgpack.decode(new Uint8Array(data), { extensionCodec })
   },
 }
 
