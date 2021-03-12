@@ -636,7 +636,7 @@ class HClient {
   /**
    * Set env vars, values will be stringified and keys uppercased
    * Will be merged with the current env
-   * @param {[string key]: any value} env
+   * @param {Object<string, any>} env
    * @public
    */
   async setEnv (env) {
