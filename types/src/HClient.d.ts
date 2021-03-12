@@ -31,6 +31,14 @@ declare class HClient {
 
     wait(func: Function | string, ...args: any[]): Promise<any>;
 
+    restartApp(): Promise<void>;
+
+    getEnv(): Promise<{[name: string]: string}>;
+
+    setEnv(env: {[name: string]: any}): Promise<void>;
+
+    delEnv(name: string): Promise<void>;
+
     get closed(): boolean;
 }
 

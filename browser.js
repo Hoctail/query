@@ -1,5 +1,9 @@
 import HClient from './src/HClient'
-import msgpack from '@msgpack/msgpack'
+import { encode, decode, ExtensionCodec } from '@msgpack/msgpack'
+import { bigIntCodec } from './src/ExtensionCodecs'
+
+const extensionCodec = new ExtensionCodec()
+bigIntCodec(extensionCodec, encode, decode)
 
 /**
  * @module browser
@@ -27,13 +31,13 @@ class Client extends HClient {
 
   decode (event) {
     if (!event.hasOwnProperty('decoded')) {
-      event.decoded = msgpack.decode(new Uint8Array(event.data))
+      event.decoded = Client.msgpack.decode(event.data)
     }
     return event.decoded
   }
 
   encode (obj) {
-    return msgpack.encode(obj)
+    return Client.msgpack.encode(obj)
   }
 
   /**
@@ -108,6 +112,14 @@ Client.parseApp = () => {
     }
   }
   throw new Error(`App name cannot be derived from: ${window.location.pathname}`)
+}
+Client.msgpack = {
+  encode: (obj) => {
+    return encode(obj, { extensionCodec })
+  },
+  decode: (data)  => {
+    return decode(new Uint8Array(data), { extensionCodec })
+  },
 }
 
 export default Client
