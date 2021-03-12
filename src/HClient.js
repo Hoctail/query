@@ -330,6 +330,7 @@ class HClient {
      * @type {number}
      */
     this.logLevel = parseLogLevel(options.logLevel)
+    this._logsQueue = new Map()
   }
 
   /**
@@ -594,8 +595,10 @@ class HClient {
    * @param {string} [reason] - websocket connection close reason
    * @public
    */
-  terminate (code, reason) {
+  async terminate (code, reason) {
     if (this.ws != null) {
+      await Promise.allSettled(this._logsQueue.values())
+      this._logsQueue.clear()
       this.ws.close(code, reason)
       if (typeof this.ws.terminate === 'function') {
         this.ws.terminate()
@@ -612,7 +615,48 @@ class HClient {
   eventListener (callback) {
     this._eventCallback = callback
   }
+
+  /**
+   * Restart the app, will re-require all the modules
+   * @public
+   */
+  async restartApp () {
+    const tx = await this._newTx()
+    await tx.query('HOC RESTART')
+  }
+
+  /**
+   * Get the current env variables from server
+   * @public
+   */
+  async getEnv () {
+    return this.wait(() => process.env)
+  }
+
+  /**
+   * Set env vars, values will be stringified and keys uppercased
+   * Will be merged with the current env
+   * @param {[string key]: any value} env
+   * @public
+   */
+  async setEnv (env) {
+    await this.run(env => {
+      process.env = Object.assign({}, process.env, env)
+    }, env)
+  }
+
+  /**
+   * Remove (undef) an env variable
+   * @param {string} name
+   * @public
+   */
+  async delEnv (name) {
+    await this.run(name => {
+      delete process.env[name]
+    }, name)
+  }
 }
+
 
 /**
  * @typedef QueryObject
@@ -696,8 +740,17 @@ async function _wsQuery (client, query, params, tid, wait = false) {
   }
   const id = qid++
   return new Promise((resolve, reject) => {
+    const msg = {
+      q: query,
+      params,
+      tid,
+      qid: id,
+      schema: client.schema,
+      appname: client.app,
+      await: wait,
+    }
     const timeout = setTimeout(() => {
-      reject(new Error(`Timed out`))
+      reject(new Error(`Timed out waiting for: ${JSON.stringify(msg)}`))
     }, 30000)
     const onMessage = function (event) {
       const message = client.decode(event)
@@ -714,16 +767,13 @@ async function _wsQuery (client, query, params, tid, wait = false) {
       }
     }
     client.ws.addEventListener('message', onMessage)
-    try {
-      const msg = {
-        q: query,
-        params,
-        tid,
-        qid: id,
-        schema: client.schema,
-        appname: client.app,
-        await: wait,
+    client.ws.addEventListener('close', () => {
+      if (client.ws) {
+        client.ws.removeEventListener('message', onMessage)
       }
+      clearTimeout(timeout)
+    })
+    try {
       client.ws.send(client.encode(msg))
     } catch (e) {
       reject(e)
@@ -744,11 +794,20 @@ async function messageHandler (event) {
     case 'log':
       const msg = message.msg
       if (this.logger && msg.severity >= this.logLevel) {
-        const rows = await this.query(`select * from "${msg.schema}".logs where id = $1`, [msg.id])
-        if (rows.length > 0) {
-          const row = rows[0]
-          this.logger(row.message)
+        const logQuery = async () => {
+          try {
+            const rows = await this.query(`select * from "${msg.schema}".logs where id = $1`, [msg.id])
+            if (rows.length > 0) {
+              const row = rows[0]
+              this.logger(row.message)
+            }
+          } catch (e) {
+            this.logger(e)
+          }
         }
+        this._logsQueue.set(logQuery, logQuery)
+        await logQuery()
+        this._logsQueue.delete(logQuery)
       }
       break
     case 'event':
