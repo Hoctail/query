@@ -331,6 +331,7 @@ class HClient {
      */
     this.logLevel = parseLogLevel(options.logLevel)
     this._logsQueue = new Map()
+    this._terminating = false
   }
 
   /**
@@ -434,6 +435,12 @@ class HClient {
    * @private
    */
   async _connect () {
+    // wait until `this.terminate` finishes
+    while (this._terminating) {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100)
+      })
+    }
     if (this.closed) {
       const sleep = 3000
       for (let attempts = 3; attempts > 0; attempts--) {
@@ -596,7 +603,8 @@ class HClient {
    * @public
    */
   async terminate (code, reason) {
-    if (this.ws != null) {
+    if (!this._terminating && !this.closed) {
+      this._terminating = true
       await Promise.allSettled(this._logsQueue.values())
       this._logsQueue.clear()
       this.ws.close(code, reason)
@@ -604,6 +612,7 @@ class HClient {
         this.ws.terminate()
       }
       this.ws = null
+      this._terminating = false
     }
   }
 
