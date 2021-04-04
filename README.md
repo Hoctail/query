@@ -19,7 +19,7 @@ yarn install @hoctail/query
 import Client from '@hoctail/query'
 
 const options = {
-  baseURL: 'wss://api1.hoctail.io', // Hoctail endpoint URL
+  baseURL: 'wss://api.hoctail.io', // Hoctail endpoint URL
   key: 'xxx-xxxx-xxxx-xxxxxxxxx', // your API key
   app: 'user@example.com/my-app', // your Hoctail app identifier
 }
