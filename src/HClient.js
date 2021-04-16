@@ -814,8 +814,9 @@ async function messageHandler (event) {
             this.logger(e)
           }
         }
-        this._logsQueue.set(logQuery, logQuery)
-        await logQuery()
+        const promise = logQuery()
+        this._logsQueue.set(logQuery, promise)
+        await promise
         this._logsQueue.delete(logQuery)
       }
       break
