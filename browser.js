@@ -1,9 +1,11 @@
 import HClient from './src/HClient'
 import msgpack from '@msgpack/msgpack'
+import Queue from 'async-await-queue'
 import { bigIntCodec } from './src/ExtensionCodecs'
 
 const extensionCodec = new msgpack.ExtensionCodec()
 bigIntCodec(extensionCodec, msgpack.encode, msgpack.decode)
+const queue = new Queue(3, 100)
 
 /**
  * @module browser
@@ -94,6 +96,18 @@ class Client extends HClient {
           console.log(`Unknown command received: ${msg.cmd}`)
       }
     }
+  }
+
+  async _slotGet (qid, priority) {
+    return queue.wait(qid, priority)
+  }
+
+  _slotFree (qid) {
+    queue.end(qid)
+  }
+
+  async _flushQueue () {
+    return queue.flush()
   }
 }
 

@@ -1,10 +1,12 @@
 const { decode, encode, ExtensionCodec } = require('@msgpack/msgpack')
+const Queue = require('async-await-queue')
 const HClient = require('./src/HClient')
 const WS = require('ws')
 const { bigIntCodec } = require('./src/ExtensionCodecs')
 
 const extensionCodec = new ExtensionCodec()
 bigIntCodec(extensionCodec, encode, decode)
+const queue = new Queue(3, 100)
 
 /**
  * @module nodejs
@@ -40,6 +42,18 @@ class Client extends HClient {
 
   encode (obj) {
     return Client.msgpack.encode(obj)
+  }
+
+  async _slotGet (qid, priority) {
+    return queue.wait(qid, priority)
+  }
+
+  _slotFree (qid) {
+    queue.end(qid)
+  }
+
+  async _flushQueue () {
+    return queue.flush()
   }
 }
 Client.msgpack = {

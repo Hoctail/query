@@ -332,6 +332,37 @@ class HClient {
     this.logLevel = parseLogLevel(options.logLevel)
     this._logsQueue = new Map()
     this._terminating = false
+    this._connecting = false
+  }
+
+  /**
+   * Get a slot from queue
+   * @param {number} qid
+   * @param {number} priority
+   * @protected
+   * @returns {Promise<void>}
+   */
+  async _slotGet (qid, priority) {
+    throw new Error('Not implemented')
+  }
+
+  /**
+   * Return a slot to queue
+   * @param {number} qid
+   * @protected
+   * @returns {void}
+   */
+  _slotFree (qid) {
+    throw new Error('Not implemented')
+  }
+
+  /**
+   * Flush all the queue slots
+   * @protected
+   * @returns {Promise<void>}
+   */
+  _flushQueue () {
+    throw new Error('Not implemented')
   }
 
   /**
@@ -435,13 +466,14 @@ class HClient {
    * @private
    */
   async _connect () {
-    // wait until `this.terminate` finishes
-    while (this._terminating) {
+    // wait until state is CLOSED or OPEN
+    while (this._terminating || this._connecting) {
       await new Promise((resolve) => {
         setTimeout(resolve, 100)
       })
     }
     if (this.closed) {
+      this._connecting = true
       const sleep = 3000
       for (let attempts = 3; attempts > 0; attempts--) {
         try {
@@ -450,6 +482,7 @@ class HClient {
             this.terminate(1000, e.message)
             throw new Error('WebSocket closed abnormally')
           })
+          this._connecting = false
           return
         } catch (e) {
           console.log(e.message)
@@ -461,6 +494,7 @@ class HClient {
           }
         }
       }
+      this._connecting = false
       throw new Error(`Failed to reconnect`)
     }
   }
@@ -607,6 +641,7 @@ class HClient {
       this._terminating = true
       await Promise.allSettled(this._logsQueue.values())
       this._logsQueue.clear()
+      await this._flushQueue()
       this.ws.close(code, reason)
       if (typeof this.ws.terminate === 'function') {
         this.ws.terminate()
@@ -748,6 +783,7 @@ async function _wsQuery (client, query, params, tid, wait = false) {
     params = (Array.isArray(params)) ? params : [params]
   }
   const id = qid++
+  await client._slotGet(id, 0)
   return new Promise((resolve, reject) => {
     const msg = {
       q: query,
@@ -761,6 +797,7 @@ async function _wsQuery (client, query, params, tid, wait = false) {
     const timeout = setTimeout(() => {
       reject(new Error(`Timed out waiting for: ${JSON.stringify(msg)}`))
     }, 30000)
+    let onClose
     const onMessage = function (event) {
       const message = client.decode(event)
       if (message.type === 'result' && message.id === id) {
@@ -771,17 +808,23 @@ async function _wsQuery (client, query, params, tid, wait = false) {
           resolve(message.msg)
         } finally {
           client.ws.removeEventListener('message', onMessage)
+          client.ws.removeEventListener('close', onClose)
           clearTimeout(timeout)
+          client._slotFree(id)
         }
       }
     }
-    client.ws.addEventListener('message', onMessage)
-    client.ws.addEventListener('close', () => {
-      if (client.ws) {
-        client.ws.removeEventListener('message', onMessage)
+    onClose = () => {
+      try {
+        if (client.ws) {
+          client.ws.removeEventListener('message', onMessage)
+        }
+      } finally {
+        clearTimeout(timeout)
       }
-      clearTimeout(timeout)
-    })
+    }
+    client.ws.addEventListener('message', onMessage)
+    client.ws.addEventListener('close', onClose)
     try {
       client.ws.send(client.encode(msg))
     } catch (e) {
@@ -803,6 +846,10 @@ async function messageHandler (event) {
     case 'log':
       const msg = message.msg
       if (this.logger && msg.severity >= this.logLevel) {
+        if (msg.text) {
+          this.logger(msg.text)
+          return
+        }
         const logQuery = async () => {
           try {
             const rows = await this.query(`select * from "${msg.schema}".logs where id = $1`, [msg.id])
