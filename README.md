@@ -3,7 +3,7 @@
 [![Documentation](https://img.shields.io/badge/documentation-yes-brightgreen.svg)](https://hoctail.github.io/query/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/Hoctail/query/blob/master/LICENSE)
 
-> Hoctail query client is low level api for browser and nodejs.
+> Hoctail query client is a low level API for browser and nodejs.
 
 ### 🏠 [Homepage](https://github.com/hoctail/query)
 
