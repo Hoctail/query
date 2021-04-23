@@ -13,8 +13,9 @@ const queue = new Queue(3, 100)
  */
 
  /**
-   * Query client for nodejs is a low level api. See {@link NodeClient} for alternatives.
+   * Base class for nodejs clients. See {@link module:nodejs~NodeClient} for extensions.
    * @extends HClient
+   * @public
    * @param options see {@link HClient} base class
    * @param logger see {@link HClient} base class
   */

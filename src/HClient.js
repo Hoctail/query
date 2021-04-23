@@ -48,7 +48,7 @@
  * @property {string} schema schema ID to select event from
  * @property {string} relation table/view name to select event from
  * @property {string[]} ids list of row IDs to select
- * @public
+ * @protected
  */
 
 /**
@@ -56,7 +56,7 @@
  * @callback EventCallback
  * @param {EventMessage} message - event message
  * @return {void}
- * @public
+ * @protected
  */
 
 /**
@@ -261,7 +261,7 @@ class Tx {
 }
 
 /**
- * Hoctail query client public API. It's base class and not intended for direct use.
+ * Hoctail query client public API. It's a base class and not intended for direct use.
  * Check inherited instead:
  * {@link Client}
  */
@@ -398,7 +398,7 @@ class HClient {
   /**
    * Check if connection is closed
    * @type {boolean}
-   * @public
+   * @protected
    */
   get closed () {
     return this.ws == null
@@ -502,7 +502,7 @@ class HClient {
   /**
    * Explicit connect to server, optional
    *
-   * Lazy (re)connection is used in {@link HClient#query}, {@link HClient#run}, {@link HClient#call}, etc...
+   * Lazy (re)connection is used in all of the query functions
    * @return {Promise<void>}
    * @public
    */
@@ -526,7 +526,7 @@ class HClient {
    * Run SQL query within an implicit transaction
    * @param {string} query - SQL query string
    * @param {Array<*>} [params] - {@link Array} of query parameters
-   * @param {boolean} [wait] - will wait for any {@link Promise}s to resolve
+   * @param {boolean} [wait] - will wait for any server side {@link Promise}s to resolve
    * @return {Promise<object[]>} {@link Array} of result objects
    * @public
    */
@@ -536,9 +536,23 @@ class HClient {
   }
 
   /**
-   * Run function in a server context
+   * Run a custom function in a server context
    *
    * __Note: return value will be ignored!__
+   * @example
+   * let res = await client.run(() => {
+   *   console.log('will be logged')
+   *   return 42
+   * })
+   * // `res` will be `null`
+   *
+   * // compare to `wait()`
+   * res = await client.wait(() => {
+   *   console.log('will be logged')
+   *   return 42
+   * })
+   * // `res` will be `42`
+   *
    * @param {function} func - function definition
    * @param {...*} args - function arguments
    * @return {Promise<void>} doesn't return anything
@@ -551,6 +565,8 @@ class HClient {
 
   /**
    * Call a remote procedure
+   *
+   * Returns result, if synchronous
    * @param {string} endpoint - remote procedure name
    * @param {...*} args - remote procedure arguments
    * @return {Promise<*>} result, if any
@@ -566,11 +582,23 @@ class HClient {
    *
    * The only way to `await` for async functions/procedures
    *
-   * __Note: will open multiple transactions!__
+   * __Note: will open multiple transactions! (after each await/Promise)__
    * @param {function|string} func - inline function or remote procedure name
    * @param {...*} args - function or procedure arguments
    * @return {Promise<*>} result, if any
    * @public
+   * @example
+   * let res = await hoctail.wait(() => { return BigInt(Number.MAX_SAFE_INTEGER + 1) })
+   * // res = 9007199254740992n
+   * res = await hoctail.wait(async () => {
+   *   // first transaction
+   *   let sum = await Promise.resolve(2)
+   *   // second transaction (after await)
+   *   sum += await Promise.resolve(3)
+   *   // third transaction (after another await)
+   *   return sum
+   * })
+   * // res = 5
    */
   async wait (func, ...args) {
     const tx = await this._newTx(true)
@@ -586,6 +614,33 @@ class HClient {
 
   /**
    * Create transaction and optionally execute a local sync function in the transaction block context
+   * @example
+   * // create transaction and execute queries
+   * // (runs locally, sends queries to server and reads in the results)
+   * await client.tx(async (tx) => {
+   *   const rows = await tx.query(`select * from table`)
+   *   for (let row of rows) {
+   *     await tx.query(`insert into table2 values ($1, $2)`, [row.col1, row.col2])
+   *   }
+   *   return rows
+   * })
+   * // the above is equivalent to:
+   * // (runs remotely, compiles and executes in one go)
+   * await client.wait(() => {
+   *   const rows = hoc.sql(`select * from table`)
+   *   for (let row of rows) {
+   *     hoc.sql(`insert into table2 values ($1, $2)`, [row.col1, row.col2])
+   *   }
+   *   return rows
+   * })
+   * // `client.tx()` will be much slower than `client.wait()`
+   *
+   * // create and use an explicit transaction
+   * const tx = await client.tx()
+   * await tx.query(`insert into table values($1, $2)`, [1, 'a'])
+   * // ....
+   * // you cannot hold here too long, server will kill long transactions
+   * await tx.commit()
    * @param {function} [func] - function to execute locally in the transaction block, optional
    * @return {Promise<Tx|*>} transaction class or result of executing the function
    * @public
@@ -611,6 +666,19 @@ class HClient {
 
   /**
    * Get the current user object
+   *
+   * Only `username` and `email` properties of the object are always returned.
+   * Other props are optional, (`password` is always hidden)
+   *
+   * @example
+   * {
+   *   username: 'johndoe',
+   *   firstname: 'John',
+   *   lastname: 'Doe',
+   *   email: 'jdoe@hoctail.io',
+   *   picture: {},
+   *   password: '********'
+   * }
    * @return {Promise<Object<string, any>>}
    * @public
    */
@@ -631,7 +699,9 @@ class HClient {
   }
 
   /**
-   * Terminate the client
+   * Terminate the websocket
+   *
+   * Use `close()` instead
    * @param {number} [code] - websocket exit code
    * @param {string} [reason] - websocket connection close reason
    * @public
@@ -654,7 +724,7 @@ class HClient {
   /**
    * Add a custom event listener for server events
    * @param {EventCallback} callback
-   * @public
+   * @protected
    */
   eventListener (callback) {
     this._eventCallback = callback
@@ -679,7 +749,10 @@ class HClient {
 
   /**
    * Set env vars, values will be stringified and keys uppercased
+   *
    * Will be merged with the current env
+   *
+   * __Note: you may need to run `restartApp()` to read in the changes (re-read `process.env`)__
    * @param {Object<string, any>} env
    * @public
    */
@@ -691,6 +764,8 @@ class HClient {
 
   /**
    * Remove (undef) an env variable
+   *
+   * __Note: you may need to run `restartApp()` to read in the changes (re-read `process.env`)__
    * @param {string} name
    * @public
    */
