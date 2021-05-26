@@ -40,6 +40,8 @@ declare class HClient {
     delEnv(name: string): Promise<void>;
 
     get closed(): boolean;
+
+    stx(func: StxFunction, options?: ContextOptions|null): Promise<void>;
 }
 
 declare namespace HClient {
@@ -82,4 +84,10 @@ type UserProfile = {
     firstname: string;
     lastname: string;
     email: string;
+};
+type StxFunction = (store: Object, root?: Object) => void;
+type ContextOptions = {
+    id?: string;
+    name?: string;
+    owner?: string;
 }

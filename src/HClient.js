@@ -60,6 +60,16 @@
  */
 
 /**
+ * Application context options
+ *
+ * Used as a pointer to a specific app context
+ * @typedef {Object} AppOptions
+ * @property {string} [id] - app id
+ * @property {string} [owner] - app owner
+ * @property {string} [name] - app name
+ */
+
+/**
  * Query id, a running number
  *
  * Identifies a query in the current session
@@ -773,6 +783,30 @@ class HClient {
     await this.run(name => {
       delete process.env[name]
     }, name)
+  }
+
+  /**
+   * Execute code in a server-side transaction
+   *
+   * @example
+   * // Create a new table
+   * client.stx(store => {
+   *   store.system.schema.addTable('My Table')
+   * })
+   * // Add a table to another app
+   * client.stx(store => {
+   *   store.system.schema.addTable('Some Table')
+   * }, { owner: 'username', name: 'app' })
+   * @param {Function} func - executed function
+   * @param {AppOptions} [options] - app transaction context options
+   * @returns {Promise<void>}
+   * @public
+   */
+  async stx (func, options) {
+    return this.run(options => {
+      const { serverSideTx } = require('@hoctail/patch-interface')
+      serverSideTx(hoc, func, options)
+    }, options)
   }
 }
 
