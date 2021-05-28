@@ -495,10 +495,19 @@ class HClient {
           this._connecting = false
           return
         } catch (e) {
-          console.log(e.message)
+          // in node `ws` we do have access to client errors
+          if (e.target && e.target._req && e.target._req.res) {
+            const code = e.target._req.res.statusCode
+            const msg = e.target._req.res.statusMessage
+            if (code >= 400 && code < 500) {
+              // we try to create a better error here
+              throw new Error(`Failed to connect, client error or permission denied. HTTP code: ${code} ${msg}`)
+            }
+          }
+          console.error(e.message)
           if (attempts > 1) {
             await new Promise((resolve) => {
-              console.log(`Sleeping between reconnect attempts...`)
+              console.error(`Sleeping between reconnect attempts...`)
               setTimeout(resolve, sleep)
             })
           }
