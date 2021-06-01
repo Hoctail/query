@@ -60,6 +60,16 @@
  */
 
 /**
+ * Application context options
+ *
+ * Used as a pointer to a specific app context
+ * @typedef {Object} AppOptions
+ * @property {string} [id] - app id
+ * @property {string} [owner] - app owner
+ * @property {string} [name] - app name
+ */
+
+/**
  * Query id, a running number
  *
  * Identifies a query in the current session
@@ -485,10 +495,19 @@ class HClient {
           this._connecting = false
           return
         } catch (e) {
-          console.log(e.message)
+          // in node `ws` we do have access to client errors
+          if (e.target && e.target._req && e.target._req.res) {
+            const code = e.target._req.res.statusCode
+            const msg = e.target._req.res.statusMessage
+            if (code >= 400 && code < 500) {
+              // we try to create a better error here
+              throw new Error(`Failed to connect, client error or permission denied. HTTP code: ${code} ${msg}`)
+            }
+          }
+          console.error(e.message)
           if (attempts > 1) {
             await new Promise((resolve) => {
-              console.log(`Sleeping between reconnect attempts...`)
+              console.error(`Sleeping between reconnect attempts...`)
               setTimeout(resolve, sleep)
             })
           }
@@ -773,6 +792,33 @@ class HClient {
     await this.run(name => {
       delete process.env[name]
     }, name)
+  }
+
+  /**
+   * Execute code in a server-side transaction
+   *
+   * @example
+   * // Create a new table
+   * client.stx(store => {
+   *   store.system.schema.addTable('My Table')
+   * })
+   * // Add a table to another app
+   * client.stx(store => {
+   *   store.system.schema.addTable('Some Table')
+   * }, { owner: 'username', name: 'app' })
+   * @param {Function} func - executed function
+   * @param {AppOptions} [options] - app transaction context options
+   * @returns {Promise<void>}
+   * @public
+   */
+  async stx (func, options) {
+    const tx = await this._newTx()
+    await tx._queryFunc('hoc run', [`
+    (options => {
+      const { serverSideTx } = require('@hoctail/patch-interface')
+      serverSideTx(hoc, ${func.toString()}, options)
+    })(${JSON.stringify(options)})
+    `])
   }
 }
 
