@@ -812,10 +812,13 @@ class HClient {
    * @public
    */
   async stx (func, options) {
-    return this.run(options => {
+    const tx = await this._newTx()
+    await tx._queryFunc('hoc run', [`
+    (options => {
       const { serverSideTx } = require('@hoctail/patch-interface')
-      serverSideTx(hoc, func, options)
-    }, options)
+      serverSideTx(hoc, ${func.toString()}, options)
+    })(${JSON.stringify(options)})
+    `])
   }
 }
 

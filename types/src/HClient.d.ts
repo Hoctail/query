@@ -85,7 +85,12 @@ type UserProfile = {
     lastname: string;
     email: string;
 };
-type StxFunction = (store: Object, root?: Object) => void;
+type StxObject = {
+    store: Object;
+    root: Object;
+    types: Object;
+}
+type StxFunction = (obj: StxObject) => void|Promise<void>;
 type ContextOptions = {
     id?: string;
     name?: string;
