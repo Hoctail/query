@@ -67,6 +67,7 @@
  * @property {string} [id] - app id
  * @property {string} [owner] - app owner
  * @property {string} [name] - app name
+ * @property {boolean} [return=false] - set true if stx should return result
  */
 
 /**
@@ -812,13 +813,44 @@ class HClient {
    * @public
    */
   async stx (func, options) {
-    const tx = await this._newTx()
-    return await tx._queryFunc('hoc run', [`
+    let waitRes
+    if (typeof options === 'object' && 'return' in options) {
+      waitRes = !!options.return
+      delete options.return
+      if (!Object.keys(options).length) options = undefined
+    }
+    const tx = await this._newTx(waitRes)
+    const res = await tx._queryFunc(`hoc ${waitRes ? 'await' : 'run'}`, [`
     (options => {
       const { serverSideTx } = require('@hoctail/patch-interface')
       return serverSideTx(hoc, ${func.toString()}, options)
     })(${JSON.stringify(options)})
     `])
+    return res.length > 0 ? res[0].value : null
+  }
+
+  /**
+   * Execute code in a server-side transaction and return result
+   * from server to client. Can be slower than `stx`.
+   *
+   * @example
+   * // Create a new table
+   * client.stx(store => {
+   *   store.system.schema.addTable('My Table')
+   * })
+   * // Add a table to another app
+   * client.stx(store => {
+   *   store.system.schema.addTable('Some Table')
+   * }, { owner: 'username', name: 'app' })
+   * @param {Function} func - executed function returning result
+   * @param {AppOptions} [options] - app transaction context options
+   * @returns {Promise<void>}
+   * @public
+   */
+   async stxRet (func, options) {
+     if (typeof options === 'object') options.return = true
+     else options = { return: true }
+     return this.stx(func, options)
   }
 }
 
