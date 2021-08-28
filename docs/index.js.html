@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>index.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="https://github.com/hoctail/query" target="_blank" class="menu-item" id="repository" >Github repo</a></h2><h2><a href="https://raw.githubusercontent.com/Hoctail/query/master/img/api-keys.gif" target="_blank" class="menu-item" id="apikeys" >API keys</a></h2><h3>Classes</h3><ul><li><a href="module-nodejs-Client.html">nodejs~Client</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-nodejs-Client.html#call">call</a></li><li data-type='method' style='display: none;'><a href="module-nodejs-Client.html#connect">connect</a></li><li data-type='method' style='display: none;'><a href="module-nodejs-Client.html#delEnv">delEnv</a></li><li data-type='method' style='display: none;'><a href="module-nodejs-Client.html#getEnv">getEnv</a></li><li data-type='method' style='display: none;'><a href="module-nodejs-Client.html#query">query</a></li><li data-type='method' style='display: none;'><a href="module-nodejs-Client.html#restartApp">restartApp</a></li><li data-type='method' style='display: none;'><a href="module-nodejs-Client.html#run">run</a></li><li data-type='method' style='display: none;'><a href="module-nodejs-Client.html#setEnv">setEnv</a></li><li data-type='method' style='display: none;'><a href="module-nodejs-Client.html#stx">stx</a></li><li data-type='method' style='display: none;'><a href="module-nodejs-Client.html#stxRet">stxRet</a></li><li data-type='method' style='display: none;'><a href="module-nodejs-Client.html#terminate">terminate</a></li><li data-type='method' style='display: none;'><a href="module-nodejs-Client.html#tx">tx</a></li><li data-type='method' style='display: none;'><a href="module-nodejs-Client.html#user">user</a></li><li data-type='method' style='display: none;'><a href="module-nodejs-Client.html#wait">wait</a></li></ul></li><li><a href="Tx.html">Tx</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Tx.html#call">call</a></li><li data-type='method' style='display: none;'><a href="Tx.html#commit">commit</a></li><li data-type='method' style='display: none;'><a href="Tx.html#query">query</a></li><li data-type='method' style='display: none;'><a href="Tx.html#rollback">rollback</a></li><li data-type='method' style='display: none;'><a href="Tx.html#run">run</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#ClientOptions">ClientOptions</a></li><li><a href="global.html#LoggerFunction">LoggerFunction</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">index.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const { decode, encode, ExtensionCodec } = require('@msgpack/msgpack')
+const Queue = require('async-await-queue')
+const HClient = require('./src/HClient')
+const WS = require('ws')
+const { bigIntCodec } = require('./src/ExtensionCodecs')
+
+const extensionCodec = new ExtensionCodec()
+bigIntCodec(extensionCodec, encode, decode)
+const queue = new Queue(3, 100)
+
+/**
+ * @module nodejs
+ */
+
+ /**
+   * Base class for nodejs clients. See {@link module:nodejs~NodeClient} for extensions.
+   * @extends HClient
+   * @public
+   * @param options see {@link HClient} base class
+   * @param logger see {@link HClient} base class
+  */
+class Client extends HClient {
+  createSocket () {
+    if (!this.token) {
+      throw new Error(`Auth token is not set, check your config`)
+    }
+    this.ws = new WS(this.getEndpoint(), undefined, {
+      headers: { Authorization: this.token }
+    })
+    this.ws.setMaxListeners(0)
+  }
+
+  get closed () {
+    return this.ws == null || this.ws.readyState === WS.CLOSED
+  }
+
+  decode (event) {
+    if (!event.hasOwnProperty('decoded')) {
+      event.decoded = Client.msgpack.decode(event.data)
+    }
+    return event.decoded
+  }
+
+  encode (obj) {
+    return Client.msgpack.encode(obj)
+  }
+
+  async _slotGet (qid, priority) {
+    return queue.wait(qid, priority)
+  }
+
+  _slotFree (qid) {
+    queue.end(qid)
+  }
+
+  async _flushQueue () {
+    return queue.flush()
+  }
+}
+Client.msgpack = {
+  encode: (obj) => {
+    return encode(obj, { extensionCodec })
+  },
+  decode: (data)  => {
+    return decode(new Uint8Array(data), { extensionCodec })
+  },
+}
+module.exports = Client
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>
